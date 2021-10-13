@@ -39,6 +39,10 @@ The action will perform the following tasks:
 - All files are committed and pushed to your repository
 - Data is deployed on GitHub pages
 
+## File structure
+
+Each specification has its own `.trig` file with the LDES members in it. The first page is `1.trig` and is incremented for each specification. When the report can not be fetched for a specification, the specification is added to an error file, `.error.txt`. This file only exists for debug purposes.
+
 ## Inputs
 
 ### `url`
