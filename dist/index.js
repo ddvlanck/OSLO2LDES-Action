@@ -43,14 +43,20 @@ class DataHandler {
                 console.log(`No classes for ${specificationId}`);
                 return quads;
             }
-            classes.forEach(classObject => {
+            for (const classObject of classes) {
                 const id = classObject['@id'];
                 const versionId = `${id}@${publicationDate}`;
                 const type = classObject['@type'];
-                members.push(versionId);
                 // Process these as a container with language tags as keys
                 const definitionObject = classObject.definition || {};
-                const labelObject = classObject.label || {};
+                const labelObject = classObject.label || undefined;
+                // Classes that do not have a label will not be processed.
+                // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
+                // are not being processed.
+                if (labelObject === '' || labelObject === undefined) {
+                    continue;
+                }
+                members.push(versionId);
                 quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', type, specificationId), Helper_1.helper.createQuadWithObjectNode(versionId, 'http://purl.org/dc/terms/isVersionOf', id, specificationId));
                 Object.keys(definitionObject).forEach((language) => {
                     const definition = definitionObject[language];
@@ -68,7 +74,7 @@ class DataHandler {
                         quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/2000/01/rdf-schema#subclassOf', parent.uri, specificationId));
                     });
                 }
-            });
+            }
             return quads;
         };
         this.propertiesToQuads = (propertyObjects, specificationId, publicationDate, members) => {
@@ -77,15 +83,21 @@ class DataHandler {
                 console.log(`No properties for ${specificationId}`);
                 return quads;
             }
-            propertyObjects.forEach(propertyObject => {
+            for (const propertyObject of propertyObjects) {
                 const id = propertyObject['@id'];
                 const versionId = `${id}@${publicationDate}`;
                 const type = propertyObject['@type'];
-                members.push(versionId);
                 // Process these as a container with language tags as keys
                 const definitionObject = propertyObject.definition || {};
-                const labelObject = propertyObject.label || {};
+                const labelObject = propertyObject.label || undefined;
                 const domains = propertyObject.domain || [];
+                // Properties that do not have a label will not be processed.
+                // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
+                // are not being processed.
+                if (labelObject === '' || labelObject === undefined) {
+                    continue;
+                }
+                members.push(versionId);
                 quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', type, specificationId), Helper_1.helper.createQuadWithObjectNode(versionId, 'http://purl.org/dc/terms/isVersionOf', id, specificationId));
                 Object.keys(definitionObject).forEach((language) => {
                     const definition = definitionObject[language];
@@ -98,7 +110,7 @@ class DataHandler {
                 domains.forEach((domain) => {
                     quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/2000/01/rdf-schema#domain', domain.uri, specificationId));
                 });
-            });
+            }
             return quads;
         };
         this.pageNumber = 1;
@@ -122,6 +134,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Processor = void 0;
 const fs_1 = __nccwpck_require__(5747);
 const DataHandler_1 = __nccwpck_require__(766);
+const Configuration_1 = __nccwpck_require__(3433);
 const Helper_1 = __nccwpck_require__(4570);
 const fetch = __nccwpck_require__(467);
 class Processor {
@@ -151,6 +164,9 @@ class Processor {
                 tasks.push(this.processSpecification(specification));
             });
             await Promise.all(tasks);
+            this.unhandledSpecifications.forEach(specification => {
+                Helper_1.helper.appendToFile(`${specification}\n`, `${Configuration_1.configuration.storage}/.error.txt`);
+            });
         };
         this.processSpecification = async (specification) => {
             const reportUrls = Helper_1.helper.generateReportUrl(specification);
@@ -255,6 +271,9 @@ class Helper {
         this.createQuadWithObjectNode = (subject, predicate, object, graph) => this.factory.quad(typeof subject === 'string' ? this.factory.namedNode(subject) : subject, this.factory.namedNode(predicate), typeof object === 'string' ? this.factory.namedNode(object) : object, graph ? this.factory.namedNode(graph) : undefined);
         this.createQuadWithObjectLiteral = (subject, predicate, object, language, graph) => this.factory.quad(this.factory.namedNode(subject), this.factory.namedNode(predicate), this.factory.literal(object, language), this.factory.namedNode(graph));
         this.createBlankNode = () => this.factory.blankNode();
+        this.appendToFile = (name, path) => {
+            (0, fs_1.appendFileSync)(path, name);
+        };
     }
 }
 exports.Helper = Helper;

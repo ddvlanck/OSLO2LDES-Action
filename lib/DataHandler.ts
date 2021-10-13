@@ -93,16 +93,23 @@ export class DataHandler {
       return quads;
     }
 
-    classes.forEach(classObject => {
+    for (const classObject of classes) {
       const id = classObject['@id'];
       const versionId = `${id}@${publicationDate}`;
       const type = classObject['@type'];
 
-      members.push(versionId);
-
       // Process these as a container with language tags as keys
       const definitionObject = classObject.definition || {};
-      const labelObject = classObject.label || {};
+      const labelObject = classObject.label || undefined;
+
+      // Classes that do not have a label will not be processed.
+      // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
+      // are not being processed.
+      if (labelObject === '' || labelObject === undefined) {
+        continue;
+      }
+
+      members.push(versionId);
 
       quads.push(
         helper.createQuadWithObjectNode(
@@ -163,7 +170,7 @@ export class DataHandler {
           );
         });
       }
-    });
+    }
 
     return quads;
   };
@@ -181,18 +188,24 @@ export class DataHandler {
       return quads;
     }
 
-    propertyObjects.forEach(propertyObject => {
+    for (const propertyObject of propertyObjects) {
       const id = propertyObject['@id'];
       const versionId = `${id}@${publicationDate}`;
       const type = propertyObject['@type'];
 
-      members.push(versionId);
-
       // Process these as a container with language tags as keys
       const definitionObject: any = propertyObject.definition || {};
-      const labelObject: any = propertyObject.label || {};
-
+      const labelObject: any = propertyObject.label || undefined;
       const domains: any[] = propertyObject.domain || [];
+
+      // Properties that do not have a label will not be processed.
+      // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
+      // are not being processed.
+      if (labelObject === '' || labelObject === undefined) {
+        continue;
+      }
+
+      members.push(versionId);
 
       quads.push(
         helper.createQuadWithObjectNode(
@@ -247,7 +260,7 @@ export class DataHandler {
           ),
         );
       });
-    });
+    }
 
     return quads;
   };

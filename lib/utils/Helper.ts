@@ -65,6 +65,10 @@ export class Helper {
     );
 
   public createBlankNode = (): RDF.BlankNode => this.factory.blankNode();
+
+  public appendToFile = (name: string, path: string): void => {
+    appendFileSync(path, name);
+  };
 }
 
 export const helper = new Helper();

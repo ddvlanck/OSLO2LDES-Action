@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from 'fs';
 import { DataHandler } from './DataHandler';
+import { configuration } from './utils/Configuration';
 import { helper } from './utils/Helper';
 
 const fetch = require('node-fetch');
@@ -55,6 +56,10 @@ export class Processor {
     });
 
     await Promise.all(tasks);
+
+    this.unhandledSpecifications.forEach(specification => {
+      helper.appendToFile(`${specification}\n`, `${configuration.storage}/.error.txt`);
+    });
   };
 
   private readonly processSpecification = async (specification: any): Promise<void> => {
