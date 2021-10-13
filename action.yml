@@ -1,0 +1,48 @@
+name: 'OSLO2LDES'
+description: 'Publishes the OSLO Knowledge Graph as a Linked Data Event Stream'
+inputs:
+  url:
+    description: 'URL to the configuration file of OSLO specifications'
+    required: true
+  storage:
+    description: 'Output directory name where the fetched data will be stored'
+    required: true
+  gh_pages_url:
+    description: 'URL to the GitHub Pages repository'
+    required: false
+    default: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/'
+  git_username:
+    description: 'Git username that makes the commits'
+    required: false
+    default: 'LDES-action'
+  git_email:
+    description: 'Git email that makes the commits'
+    required: false
+    default: 'LDES-action@users.noreply.github.com'
+  page_size:
+    description: 'Number of members that must be stored on a page'
+    required: false,
+    default: 50
+outputs:
+  delta_bytes: # size of changed data
+    description: 'The overall number of bytes changed in the output data this run (current size - previous size)'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+    - name: Run main script
+      run: node ${{ github.action_path }}/dist/index.js
+      shell: bash
+      env:
+        INPUT_URL: ${{ inputs.url }}
+        INPUT_STORAGE: ${{ inputs.storage }}
+        INPUT_GH_PAGES_URL: ${{ inputs.gh_pages_url }}
+        INPUT_GIT_USERNAME: ${{ inputs.git_username }}
+        INPUT_GIT_EMAIL: ${{ inputs.git_email }}
+        INPUT_PAGE_SIZE: ${{ inputs.page_size }}
+    - name: Run post script
+      run: node ${{ github.action_path }}/dist/post/index.js
+      shell: bash
