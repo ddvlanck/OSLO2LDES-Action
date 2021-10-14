@@ -95,7 +95,7 @@ export class DataHandler {
 
     for (const classObject of classes) {
       const id = classObject['@id'];
-      const versionId = `${id}@${publicationDate}`;
+      const versionId = `${id}#${publicationDate}`;
       const type = classObject['@type'];
 
       // Process these as a container with language tags as keys
@@ -190,7 +190,7 @@ export class DataHandler {
 
     for (const propertyObject of propertyObjects) {
       const id = propertyObject['@id'];
-      const versionId = `${id}@${publicationDate}`;
+      const versionId = `${id}#${publicationDate}`;
       const type = propertyObject['@type'];
 
       // Process these as a container with language tags as keys
