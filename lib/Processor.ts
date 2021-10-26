@@ -73,8 +73,6 @@ export class Processor {
     }
 
     await this.dataHandler.toLdes(data);
-
-    // TODO write extra files with specifications that were unprocessable
   };
 
   private readonly fetchSpecification = async (reportUrls: string[]): Promise<any> => {

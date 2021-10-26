@@ -103,9 +103,9 @@ export class DataHandler {
       const labelObject = classObject.label || undefined;
 
       // Classes that do not have a label will not be processed.
-      // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
-      // are not being processed.
-      if (labelObject === '' || labelObject === undefined) {
+      // At the moment, we also don't publish codelists (http://www.w3.org/2004/02/skos/core#Concept)
+      // as it is not possible to distinguish them for each other apart from their label
+      if (labelObject === '' || labelObject === undefined || id === 'http://www.w3.org/2004/02/skos/core#Concept') {
         continue;
       }
 
@@ -197,11 +197,13 @@ export class DataHandler {
       const definitionObject: any = propertyObject.definition || {};
       const labelObject: any = propertyObject.label || undefined;
       const domains: any[] = propertyObject.domain || [];
+      const ranges: any[] = propertyObject.range || [];
 
       // Properties that do not have a label will not be processed.
       // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
       // are not being processed.
-      if (labelObject === '' || labelObject === undefined) {
+
+      if (labelObject === '' || labelObject === undefined || id === 'http://www.w3.org/2004/02/skos/core#Concept') {
         continue;
       }
 
@@ -256,6 +258,17 @@ export class DataHandler {
             versionId,
             'http://www.w3.org/2000/01/rdf-schema#domain',
             domain.uri,
+            specificationId,
+          ),
+        );
+      });
+
+      ranges.forEach((range: any) => {
+        quads.push(
+          helper.createQuadWithObjectNode(
+            versionId,
+            'http://www.w3.org/2000/01/rdf-schema#range',
+            range.uri,
             specificationId,
           ),
         );
