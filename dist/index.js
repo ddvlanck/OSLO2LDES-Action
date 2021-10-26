@@ -51,9 +51,9 @@ class DataHandler {
                 const definitionObject = classObject.definition || {};
                 const labelObject = classObject.label || undefined;
                 // Classes that do not have a label will not be processed.
-                // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
-                // are not being processed.
-                if (labelObject === '' || labelObject === undefined) {
+                // At the moment, we also don't publish codelists (http://www.w3.org/2004/02/skos/core#Concept)
+                // as it is not possible to distinguish them for each other apart from their label
+                if (labelObject === '' || labelObject === undefined || id === 'http://www.w3.org/2004/02/skos/core#Concept') {
                     continue;
                 }
                 members.push(versionId);
@@ -91,10 +91,11 @@ class DataHandler {
                 const definitionObject = propertyObject.definition || {};
                 const labelObject = propertyObject.label || undefined;
                 const domains = propertyObject.domain || [];
+                const ranges = propertyObject.range || [];
                 // Properties that do not have a label will not be processed.
                 // At the moment, this means that codelists (http://www.w3.org/2004/02/skos/core#Concept)
                 // are not being processed.
-                if (labelObject === '' || labelObject === undefined) {
+                if (labelObject === '' || labelObject === undefined || id === 'http://www.w3.org/2004/02/skos/core#Concept') {
                     continue;
                 }
                 members.push(versionId);
@@ -109,6 +110,9 @@ class DataHandler {
                 });
                 domains.forEach((domain) => {
                     quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/2000/01/rdf-schema#domain', domain.uri, specificationId));
+                });
+                ranges.forEach((range) => {
+                    quads.push(Helper_1.helper.createQuadWithObjectNode(versionId, 'http://www.w3.org/2000/01/rdf-schema#range', range.uri, specificationId));
                 });
             }
             return quads;
@@ -177,7 +181,6 @@ class Processor {
                 return;
             }
             await this.dataHandler.toLdes(data);
-            // TODO write extra files with specifications that were unprocessable
         };
         this.fetchSpecification = async (reportUrls) => {
             if (reportUrls.length === 0) {
